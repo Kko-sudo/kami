@@ -3,6 +3,7 @@ from functools import wraps
 import hashlib
 import os
 import uuid
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,6 +19,10 @@ from ympay import YmPayConfig
 app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY
 
+# 配置日志
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Session配置
 app.config['SESSION_COOKIE_SECURE'] = False  # 开发环境设为False，生产环境设为True（HTTPS）
 app.config['SESSION_COOKIE_HTTPONLY'] = True
@@ -26,28 +31,67 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24小时
 app.config['SESSION_COOKIE_NAME'] = 'session'  # 明确设置 cookie 名称
 app.config['SESSION_REFRESH_EACH_REQUEST'] = False  # 不每次请求都刷新 session
 
-db = Database()
-card_system = CardKeySystem()
+# 初始化数据库（必须成功）
+try:
+    db = Database()
+    logger.info("数据库初始化成功")
+except Exception as e:
+    logger.error(f"数据库初始化失败: {str(e)}")
+    logger.error("应用无法启动，数据库是必需的")
+    raise
 
-# 初始化邮件发送器
-email_sender = EmailSender(
-    smtp_server=Config.SMTP_SERVER,
-    smtp_port=Config.SMTP_PORT,
-    smtp_username=Config.SMTP_USERNAME,
-    smtp_password=Config.SMTP_PASSWORD
-)
+# 初始化卡密系统（必须成功）
+try:
+    card_system = CardKeySystem()
+    logger.info("卡密系统初始化成功")
+except Exception as e:
+    logger.error(f"卡密系统初始化失败: {str(e)}")
+    logger.error("应用无法启动，卡密系统是必需的")
+    raise
 
-# 初始化支付二维码生成器
-qr_generator = PaymentQRCodeGenerator(
-    alipay_account=Config.ALIPAY_ACCOUNT,
-    wechat_account=Config.WECHAT_ACCOUNT
-)
+# 初始化邮件发送器（可选，失败不影响启动）
+email_sender = None
+try:
+    email_sender = EmailSender(
+        smtp_server=Config.SMTP_SERVER,
+        smtp_port=Config.SMTP_PORT,
+        smtp_username=Config.SMTP_USERNAME,
+        smtp_password=Config.SMTP_PASSWORD
+    )
+    logger.info("邮件发送器初始化成功")
+except Exception as e:
+    logger.warning(f"邮件发送器初始化失败: {str(e)}")
+    logger.warning("邮件发送功能将不可用")
 
-# 初始化支付状态检测器
-payment_checker = PaymentStatusChecker(db)
+# 初始化支付二维码生成器（可选，失败不影响启动）
+qr_generator = None
+try:
+    qr_generator = PaymentQRCodeGenerator(
+        alipay_account=Config.ALIPAY_ACCOUNT,
+        wechat_account=Config.WECHAT_ACCOUNT
+    )
+    logger.info("支付二维码生成器初始化成功")
+except Exception as e:
+    logger.warning(f"支付二维码生成器初始化失败: {str(e)}")
+    logger.warning("支付二维码生成功能将不可用")
 
-# 初始化YmPay配置
-ympay_config = YmPayConfig()
+# 初始化支付状态检测器（可选，失败不影响启动）
+payment_checker = None
+try:
+    payment_checker = PaymentStatusChecker(db)
+    logger.info("支付状态检测器初始化成功")
+except Exception as e:
+    logger.warning(f"支付状态检测器初始化失败: {str(e)}")
+    logger.warning("支付状态检测功能将不可用")
+
+# 初始化YmPay配置（可选，失败不影响启动）
+ympay_config = None
+try:
+    ympay_config = YmPayConfig()
+    logger.info("YmPay配置初始化成功")
+except Exception as e:
+    logger.warning(f"YmPay配置初始化失败: {str(e)}")
+    logger.warning("YmPay功能将不可用")
 
 def login_required(f):
     @wraps(f)
