@@ -89,9 +89,11 @@ class Database:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 paid_at TIMESTAMP,
                 order_group_id INTEGER,
+                payment_id INTEGER,
                 FOREIGN KEY (user_id) REFERENCES users(id),
                 FOREIGN KEY (card_key_id) REFERENCES card_keys(id),
-                FOREIGN KEY (order_group_id) REFERENCES order_groups(id)
+                FOREIGN KEY (order_group_id) REFERENCES order_groups(id),
+                FOREIGN KEY (payment_id) REFERENCES payments(id)
             )
         ''')
         
@@ -161,7 +163,23 @@ class Database:
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
-        
+
+        # 支付表
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS payments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                order_id INTEGER NOT NULL,
+                payment_method TEXT NOT NULL,
+                amount REAL NOT NULL,
+                qr_code TEXT,
+                status TEXT DEFAULT 'pending',
+                transaction_id TEXT,
+                paid_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (order_id) REFERENCES orders(id)
+            )
+        ''')
+
         # 插入默认价格配置
         cursor.execute('''
             INSERT OR IGNORE INTO price_config (card_type, price, days_valid, description)
@@ -187,6 +205,12 @@ class Database:
         
         try:
             cursor.execute('ALTER TABLE users ADD COLUMN device_fingerprint TEXT')
+        except:
+            pass
+
+        # 添加payment_id字段到orders表（如果不存在）
+        try:
+            cursor.execute('ALTER TABLE orders ADD COLUMN payment_id INTEGER')
         except:
             pass
         
