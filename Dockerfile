@@ -13,17 +13,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # 创建必要的目录
-RUN mkdir -p downloads logs
+RUN mkdir -p downloads logs data
 
 # 设置环境变量
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
 ENV PYTHONUNBUFFERED=1
+ENV DATABASE_PATH=/app/data/bank_card_system.db
 
 EXPOSE 5000
 
-# 使用启动脚本
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-
-CMD ["/app/entrypoint.sh"]
+# 直接使用Gunicorn启动应用
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--threads", "4", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "app:app"]
