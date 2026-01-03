@@ -80,6 +80,37 @@ class Database:
             )
         ''')
         
+        # 订单组表
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS order_groups (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                total_price REAL NOT NULL,
+                total_items INTEGER NOT NULL,
+                card_type TEXT NOT NULL,
+                status TEXT DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                paid_at TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        ''')
+        
+        # 支付表
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS payments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                order_id INTEGER NOT NULL,
+                payment_method TEXT NOT NULL,
+                amount REAL NOT NULL,
+                qr_code TEXT,
+                status TEXT DEFAULT 'pending',
+                transaction_id TEXT,
+                paid_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (order_id) REFERENCES orders(id)
+            )
+        ''')
+        
         # 订单表
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS orders (
@@ -99,21 +130,6 @@ class Database:
                 FOREIGN KEY (card_key_id) REFERENCES card_keys(id),
                 FOREIGN KEY (order_group_id) REFERENCES order_groups(id),
                 FOREIGN KEY (payment_id) REFERENCES payments(id)
-            )
-        ''')
-        
-        # 订单组表
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS order_groups (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                total_price REAL NOT NULL,
-                total_items INTEGER NOT NULL,
-                card_type TEXT NOT NULL,
-                status TEXT DEFAULT 'pending',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                paid_at TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id)
             )
         ''')
         
@@ -166,22 +182,6 @@ class Database:
                 days_valid INTEGER NOT NULL,
                 description TEXT,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-
-        # 支付表
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS payments (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                order_id INTEGER NOT NULL,
-                payment_method TEXT NOT NULL,
-                amount REAL NOT NULL,
-                qr_code TEXT,
-                status TEXT DEFAULT 'pending',
-                transaction_id TEXT,
-                paid_at TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (order_id) REFERENCES orders(id)
             )
         ''')
 
