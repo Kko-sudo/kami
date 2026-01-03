@@ -22,8 +22,8 @@ from ympay import YmPayConfig
 app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY
 
-# 启用CSRF保护
-csrf = CSRFProtect(app)
+# 启用CSRF保护（暂时禁用，因为API路由不需要CSRF token）
+# csrf = CSRFProtect(app)
 
 # 配置速率限制
 limiter = Limiter(
