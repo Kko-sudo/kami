@@ -23,5 +23,8 @@ ENV DATABASE_PATH=/app/data/bank_card_system.db
 
 EXPOSE 5000
 
-# 直接使用Gunicorn启动应用
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--threads", "4", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "app:app"]
+# 使用启动脚本
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
+CMD ["/app/start.sh"]
