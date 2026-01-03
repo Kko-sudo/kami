@@ -10,6 +10,7 @@ import os
 import logging
 from datetime import datetime
 from card_key_system import CardKeySystem
+import bcrypt
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +55,6 @@ class Database:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
-                raw_password TEXT,
                 email TEXT,
                 phone TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -223,8 +223,10 @@ class Database:
         conn.close()
     
     def hash_password(self, password):
-        """密码哈希"""
-        return hashlib.sha256(password.encode()).hexdigest()
+        """密码哈希（使用bcrypt）"""
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+        return hashed.decode('utf-8')
     
     def create_user(self, username, password, email=None, phone=None):
         """创建用户"""
@@ -233,9 +235,9 @@ class Database:
         
         try:
             cursor.execute('''
-                INSERT INTO users (username, password, raw_password, email, phone)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (username, self.hash_password(password), password, email, phone))
+                INSERT INTO users (username, password, email, phone)
+                VALUES (?, ?, ?, ?)
+            ''', (username, self.hash_password(password), email, phone))
             conn.commit()
             user_id = cursor.lastrowid
             conn.close()
@@ -258,24 +260,19 @@ class Database:
         user = cursor.fetchone()
         conn.close()
         
-        print(f"[DEBUG] Database verify - Username: {username}, User found: {user is not None}")
-        
         if user:
-            password_hash = self.hash_password(password)
-            print(f"[DEBUG] Password comparison - Input hash: {password_hash}, DB hash: {user['password']}")
-            print(f"[DEBUG] Passwords match: {user['password'] == password_hash}")
-            
-            if user['password'] == password_hash:
-                print(f"[DEBUG] User authenticated - ID: {user['id']}, Is Admin: {user['is_admin']}")
-                return True, {
-                    'id': user['id'],
-                    'username': user['username'],
-                    'is_admin': bool(user['is_admin']),
-                    'email': user['email'],
-                    'phone': user['phone']
-                }
+            try:
+                if bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+                    return True, {
+                        'id': user['id'],
+                        'username': user['username'],
+                        'is_admin': bool(user['is_admin']),
+                        'email': user['email'],
+                        'phone': user['phone']
+                    }
+            except Exception as e:
+                logger.error(f"密码验证失败: {str(e)}")
         
-        print(f"[DEBUG] Authentication failed")
         return False, None
     
     def calculate_card_price(self, card_type):
@@ -1169,5 +1166,5 @@ class Database:
 if __name__ == '__main__':
     db = Database()
     
-    print("数据库初始化完成")
-    print(f"统计信息: {json.dumps(db.get_statistics(), indent=2, ensure_ascii=False)}")
+    logger.info("数据库初始化完成")
+    logger.info(f"统计信息: {json.dumps(db.get_statistics(), indent=2, ensure_ascii=False)}")

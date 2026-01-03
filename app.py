@@ -1,5 +1,8 @@
 from flask import Flask, request, jsonify, session, render_template, redirect, send_from_directory
 from functools import wraps
+from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import hashlib
 import os
 import uuid
@@ -18,6 +21,17 @@ from ympay import YmPayConfig
 
 app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY
+
+# 启用CSRF保护
+csrf = CSRFProtect(app)
+
+# 配置速率限制
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -114,87 +128,145 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+@app.errorhandler(404)
+def not_found(error):
+    if request.path.startswith('/api/'):
+        return jsonify({'success': False, 'message': '请求的资源不存在'}), 404
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    logger.error(f"服务器内部错误: {str(error)}")
+    if request.path.startswith('/api/'):
+        return jsonify({'success': False, 'message': '服务器内部错误，请稍后重试'}), 500
+    return render_template('500.html'), 500
+
+@app.errorhandler(403)
+def forbidden(error):
+    if request.path.startswith('/api/'):
+        return jsonify({'success': False, 'message': '访问被拒绝'}), 403
+    return render_template('403.html'), 403
+
+@app.errorhandler(401)
+def unauthorized(error):
+    if request.path.startswith('/api/'):
+        return jsonify({'success': False, 'message': '未授权访问'}), 401
+    return redirect('/login')
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    logger.error(f"未处理的异常: {str(e)}", exc_info=True)
+    if request.path.startswith('/api/'):
+        return jsonify({'success': False, 'message': '服务器错误，请稍后重试'}), 500
+    return render_template('500.html'), 500
+
 @app.route('/api/register', methods=['POST'], endpoint='api_register')
+@limiter.limit("5 per hour")
 def register():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
-    email = data.get('email', '')
-    phone = data.get('phone', '')
-    
-    if not username or not password:
-        return jsonify({'success': False, 'message': '用户名和密码不能为空'})
-    
-    if len(password) < 6:
-        return jsonify({'success': False, 'message': '密码长度至少6位'})
-    
-    success, message = db.create_user(username, password, email, phone)
-    
-    if success:
-        return jsonify({'success': True, 'message': '注册成功'})
-    else:
-        if '已存在' in message:
-            return jsonify({'success': False, 'message': '该用户名已存在'})
-        return jsonify({'success': False, 'message': message})
+    try:
+        data = request.json
+        username = data.get('username', '').strip()
+        password = data.get('password', '')
+        email = data.get('email', '').strip()
+        phone = data.get('phone', '').strip()
+        
+        # 输入验证
+        if not username or not password:
+            return jsonify({'success': False, 'message': '用户名和密码不能为空'})
+        
+        # 用户名长度和格式验证
+        if len(username) < 3 or len(username) > 20:
+            return jsonify({'success': False, 'message': '用户名长度必须在3-20位之间'})
+        
+        if not username.isalnum():
+            return jsonify({'success': False, 'message': '用户名只能包含字母和数字'})
+        
+        # 密码长度验证
+        if len(password) < 6 or len(password) > 50:
+            return jsonify({'success': False, 'message': '密码长度必须在6-50位之间'})
+        
+        # 邮箱格式验证
+        if email and '@' not in email:
+            return jsonify({'success': False, 'message': '邮箱格式不正确'})
+        
+        # 手机号格式验证
+        if phone and not phone.isdigit():
+            return jsonify({'success': False, 'message': '手机号只能包含数字'})
+        
+        success, message = db.create_user(username, password, email, phone)
+        
+        if success:
+            logger.info(f"新用户注册成功: {username}")
+            return jsonify({'success': True, 'message': '注册成功'})
+        else:
+            if '已存在' in message:
+                return jsonify({'success': False, 'message': '该用户名已存在'})
+            return jsonify({'success': False, 'message': message})
+    except Exception as e:
+        logger.error(f"注册失败: {str(e)}", exc_info=True)
+        return jsonify({'success': False, 'message': '注册失败，请稍后重试'})
 
 @app.route('/api/login', methods=['POST'])
+@limiter.limit("10 per hour")
 def login():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
-    login_type = data.get('login_type', 'user')
-    
-    print(f"[DEBUG] Login attempt - Username: {username}, Login Type: {login_type}")
-    
-    if not username or not password:
-        return jsonify({'success': False, 'message': '用户名和密码不能为空'})
-    
-    success, user = db.verify_user(username, password)
-    
-    print(f"[DEBUG] Verify result - Success: {success}, User: {user}")
-    
-    if success:
-        # 检查登录类型是否匹配
-        if login_type == 'user' and user['is_admin']:
-            print(f"[DEBUG] Admin trying to login as user")
-            return jsonify({'success': False, 'message': '请使用管理员登录页面'})
+    try:
+        data = request.json
+        username = data.get('username', '').strip()
+        password = data.get('password', '')
+        login_type = data.get('login_type', 'user')
         
-        if login_type == 'admin' and not user['is_admin']:
-            print(f"[DEBUG] Non-admin trying to login as admin")
-            return jsonify({'success': False, 'message': '需要管理员权限'})
+        # 输入验证
+        if not username or not password:
+            return jsonify({'success': False, 'message': '用户名和密码不能为空'})
         
-        # 根据登录类型使用不同的session key
-        if login_type == 'admin':
-            session['admin_user_id'] = user['id']
-            session['admin_username'] = user['username']
-            session['admin_is_admin'] = user['is_admin']
-            session.permanent = True
-            print(f"[DEBUG] Admin login successful - User ID: {user['id']}, Username: {user['username']}")
+        # 验证登录类型
+        if login_type not in ['user', 'admin']:
+            return jsonify({'success': False, 'message': '无效的登录类型'})
+        
+        success, user = db.verify_user(username, password)
+        
+        if success:
+            # 检查登录类型是否匹配
+            if login_type == 'user' and user['is_admin']:
+                return jsonify({'success': False, 'message': '请使用管理员登录页面'})
+            
+            if login_type == 'admin' and not user['is_admin']:
+                return jsonify({'success': False, 'message': '需要管理员权限'})
+            
+            # 根据登录类型使用不同的session key
+            if login_type == 'admin':
+                session['admin_user_id'] = user['id']
+                session['admin_username'] = user['username']
+                session['admin_is_admin'] = user['is_admin']
+                session.permanent = True
+            else:
+                session['user_id'] = user['id']
+                session['username'] = user['username']
+                session['is_admin'] = user['is_admin']
+                session.permanent = True
+            
+            # 检查是否首次登录
+            first_login = user.get('first_login', 1)
+            
+            logger.info(f"用户登录成功: {username}, 类型: {login_type}")
+            return jsonify({
+                'success': True, 
+                'message': '登录成功',
+                'user': {
+                    'id': user['id'],
+                    'username': user['username'],
+                    'email': user['email'],
+                    'phone': user['phone'],
+                    'is_admin': user['is_admin'],
+                    'first_login': first_login
+                }
+            })
         else:
-            session['user_id'] = user['id']
-            session['username'] = user['username']
-            session['is_admin'] = user['is_admin']
-            session.permanent = True
-            print(f"[DEBUG] User login successful - User ID: {user['id']}, Username: {user['username']}")
-        
-        # 检查是否首次登录
-        first_login = user.get('first_login', 1)
-        
-        return jsonify({
-            'success': True, 
-            'message': '登录成功',
-            'user': {
-                'id': user['id'],
-                'username': user['username'],
-                'email': user['email'],
-                'phone': user['phone'],
-                'is_admin': user['is_admin'],
-                'first_login': first_login
-            }
-        })
-    else:
-        print(f"[DEBUG] Login failed - Invalid credentials")
-        return jsonify({'success': False, 'message': '用户名或密码错误'})
+            logger.warning(f"登录失败: {username}")
+            return jsonify({'success': False, 'message': '用户名或密码错误'})
+    except Exception as e:
+        logger.error(f"登录异常: {str(e)}", exc_info=True)
+        return jsonify({'success': False, 'message': '登录失败，请稍后重试'})
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
@@ -491,25 +563,28 @@ def send_card_key_to_user():
 @app.route('/api/admin/order/generate-card-key', methods=['POST'])
 @admin_required
 def generate_card_key_for_order():
-    data = request.json
-    order_id = data.get('order_id')
-    
-    if not order_id:
-        return jsonify({'success': False, 'message': '订单ID不能为空'})
-    
     try:
+        data = request.json
+        order_id = data.get('order_id')
+        
+        if not order_id:
+            return jsonify({'success': False, 'message': '订单ID不能为空'})
+        
         success, result = db.generate_card_key_for_order(order_id)
         
         if success:
+            logger.info(f"管理员为订单生成卡密成功: order_id={order_id}")
             return jsonify({
                 'success': True,
                 'message': '卡密生成成功',
                 'card_key': result['card_key']
             })
         else:
+            logger.warning(f"管理员为订单生成卡密失败: order_id={order_id}, reason={result}")
             return jsonify({'success': False, 'message': result})
     except Exception as e:
-        return jsonify({'success': False, 'message': f'生成失败: {str(e)}'})
+        logger.error(f"管理员为订单生成卡密异常: {str(e)}", exc_info=True)
+        return jsonify({'success': False, 'message': '生成失败，请稍后重试'})
 
 @app.route('/api/admin/order/send-card-key', methods=['POST'])
 @admin_required
@@ -607,31 +682,31 @@ def get_available_banks():
 @app.route('/api/orders/create', methods=['POST'])
 @login_required
 def create_order():
-    data = request.json
-    banks = data.get('banks', [])
-    card_type = data.get('card_type')
-    quantities = data.get('quantities', [])
-    
-    if not banks or len(banks) == 0:
-        return jsonify({'success': False, 'message': '请至少选择一个银行'})
-    
-    if not card_type:
-        return jsonify({'success': False, 'message': '请选择卡密类型'})
-    
-    # 检查1天卡密限购
-    if card_type == '1day':
-        user_id = session.get('user_id')
-        ip_address = request.remote_addr
-        device_fingerprint = request.headers.get('User-Agent', '')
-        
-        has_purchased, purchase_info = db.check_1day_card_purchase(user_id, ip_address, device_fingerprint)
-        if has_purchased:
-            if purchase_info.get('reason') == 'user':
-                return jsonify({'success': False, 'message': '1天体验卡每个账号只能购买一次，您已经购买过了'})
-            else:
-                return jsonify({'success': False, 'message': '1天体验卡每个设备只能购买一次，该设备已经购买过了'})
-    
     try:
+        data = request.json
+        banks = data.get('banks', [])
+        card_type = data.get('card_type')
+        quantities = data.get('quantities', [])
+        
+        if not banks or len(banks) == 0:
+            return jsonify({'success': False, 'message': '请至少选择一个银行'})
+        
+        if not card_type:
+            return jsonify({'success': False, 'message': '请选择卡密类型'})
+        
+        # 检查1天卡密限购
+        if card_type == '1day':
+            user_id = session.get('user_id')
+            ip_address = request.remote_addr
+            device_fingerprint = request.headers.get('User-Agent', '')
+            
+            has_purchased, purchase_info = db.check_1day_card_purchase(user_id, ip_address, device_fingerprint)
+            if has_purchased:
+                if purchase_info.get('reason') == 'user':
+                    return jsonify({'success': False, 'message': '1天体验卡每个账号只能购买一次，您已经购买过了'})
+                else:
+                    return jsonify({'success': False, 'message': '1天体验卡每个设备只能购买一次，该设备已经购买过了'})
+        
         user_id = session.get('user_id')
         success, result = db.create_order(user_id, banks, card_type, '', quantities)
         
@@ -655,8 +730,10 @@ def create_order():
             )
             
             if not payment_success:
-                return jsonify({'success': False, 'message': f'支付记录创建失败: {payment_result}'})
+                logger.error(f"支付记录创建失败: {payment_result}")
+                return jsonify({'success': False, 'message': '支付记录创建失败，请稍后重试'})
             
+            logger.info(f"订单创建成功: order_id={order_id}, user_id={user_id}, total_price={total_price}")
             return jsonify({
                 'success': True,
                 'message': '订单创建成功，请完成支付',
@@ -665,9 +742,11 @@ def create_order():
                 'total_items': total_items
             })
         else:
+            logger.warning(f"订单创建失败: {result}")
             return jsonify({'success': False, 'message': result})
     except Exception as e:
-        return jsonify({'success': False, 'message': f'订单创建失败: {str(e)}'})
+        logger.error(f"订单创建异常: {str(e)}", exc_info=True)
+        return jsonify({'success': False, 'message': '订单创建失败，请稍后重试'})
 
 @app.route('/api/orders/<int:order_id>/status', methods=['GET'])
 @login_required
@@ -904,7 +983,7 @@ def user_confirm_payment_group(order_group_id):
     """用户确认订单组已支付，等待管理员审核"""
     try:
         user_id = session.get('user_id')
-        print(f"DEBUG: user_confirm_payment_group - order_group_id: {order_group_id}, user_id: {user_id}")
+        logger.info(f"用户确认支付 - order_group_id: {order_group_id}, user_id: {user_id}")
         
         # 获取订单组信息
         conn = db.get_connection()
@@ -912,11 +991,9 @@ def user_confirm_payment_group(order_group_id):
         cursor.execute('SELECT * FROM order_groups WHERE id = ? AND user_id = ?', (order_group_id, user_id))
         order_group = cursor.fetchone()
         
-        print(f"DEBUG: user_confirm_payment_group - order_group: {order_group}")
-        
         if not order_group:
             conn.close()
-            print(f"DEBUG: 订单组不存在 - order_group_id: {order_group_id}, user_id: {user_id}")
+            logger.warning(f"订单组不存在 - order_group_id: {order_group_id}, user_id: {user_id}")
             return jsonify({'success': False, 'message': '订单不存在'})
         
         if order_group['status'] == 'completed':
@@ -1192,6 +1269,17 @@ def downloads_page():
 @app.route('/downloads/<filename>')
 def download_file(filename):
     downloads_dir = os.path.join(app.root_path, 'downloads')
+    
+    # 安全验证：防止路径遍历攻击
+    filename = os.path.basename(filename)
+    if not filename:
+        return jsonify({'success': False, 'message': '无效的文件名'}), 400
+    
+    # 检查文件是否在downloads目录中
+    file_path = os.path.join(downloads_dir, filename)
+    if not os.path.abspath(file_path).startswith(os.path.abspath(downloads_dir)):
+        return jsonify({'success': False, 'message': '访问被拒绝'}), 403
+    
     return send_from_directory(downloads_dir, filename, as_attachment=True)
 
 @app.route('/login')
@@ -1319,9 +1407,9 @@ def update_admin_credentials():
             
             new_password_hash = db.hash_password(new_password)
             cursor.execute('''
-                INSERT INTO users (username, password, raw_password, is_admin)
-                VALUES (?, ?, ?, ?)
-            ''', (new_username, new_password_hash, new_password, 1))
+                INSERT INTO users (username, password, is_admin)
+                VALUES (?, ?, ?)
+            ''', (new_username, new_password_hash, 1))
             
             conn.commit()
             return jsonify({'success': True, 'message': '管理员账号密码更新成功'})
@@ -1661,6 +1749,7 @@ def create_ympay_payment():
         return jsonify({'success': False, 'message': f'创建支付订单失败: {str(e)}'})
 
 @app.route('/api/ympay/notify', methods=['POST'])
+@csrf.exempt
 def ympay_notify():
     """YmPay回调通知"""
     try:
@@ -1743,7 +1832,7 @@ def ympay_notify():
         return 'fail'
         
     except Exception as e:
-        print(f"处理YmPay回调失败: {str(e)}")
+        logger.error(f"处理YmPay回调失败: {str(e)}")
         return 'fail'
 
 @app.route('/api/ympay/config', methods=['GET', 'POST'])

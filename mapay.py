@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-YmPay（源支付Pro）集成模块
+码支付集成模块
 """
 
 import hashlib
@@ -11,12 +11,12 @@ from urllib.parse import urlencode
 
 logger = logging.getLogger(__name__)
 
-class YmPay:
-    """YmPay（源支付Pro）集成类"""
+class MaPay:
+    """码支付集成类"""
     
-    def __init__(self, pid, key, gateway_url='https://code.ymyu.cn'):
+    def __init__(self, pid, key, gateway_url='https://pay.bymmc.cn'):
         """
-        初始化YmPay
+        初始化码支付
         
         Args:
             pid: 商户ID
@@ -175,13 +175,13 @@ class YmPay:
             }
 
 
-class YmPayConfig:
-    """YmPay配置类"""
+class MaPayConfig:
+    """码支付配置类"""
     
     def __init__(self):
         self.pid = None
         self.key = None
-        self.gateway_url = 'https://code.ymyu.cn'
+        self.gateway_url = 'https://pay.bymmc.cn'
         self.notify_url = None
         self.return_url = None
         self.load_config()
@@ -190,24 +190,24 @@ class YmPayConfig:
         """加载配置"""
         try:
             import os
-            config_file = os.path.join(os.path.dirname(__file__), 'ympay_config.json')
+            config_file = os.path.join(os.path.dirname(__file__), 'mapay_config.json')
             
             if os.path.exists(config_file):
                 with open(config_file, 'r', encoding='utf-8') as f:
                     config = json.load(f)
                     self.pid = config.get('pid')
                     self.key = config.get('key')
-                    self.gateway_url = config.get('gateway_url', 'https://code.ymyu.cn')
+                    self.gateway_url = config.get('gateway_url', 'https://pay.bymmc.cn')
                     self.notify_url = config.get('notify_url')
                     self.return_url = config.get('return_url')
         except Exception as e:
-            logger.warning(f"加载YmPay配置失败: {str(e)}")
+            logger.warning(f"加载码支付配置失败: {str(e)}")
     
     def save_config(self):
         """保存配置"""
         try:
             import os
-            config_file = os.path.join(os.path.dirname(__file__), 'ympay_config.json')
+            config_file = os.path.join(os.path.dirname(__file__), 'mapay_config.json')
             
             config = {
                 'pid': self.pid,
@@ -222,15 +222,15 @@ class YmPayConfig:
             
             return True
         except Exception as e:
-            logger.error(f"保存YmPay配置失败: {str(e)}")
+            logger.error(f"保存码支付配置失败: {str(e)}")
             return False
     
-    def get_ympay_instance(self):
-        """获取YmPay实例"""
+    def get_mapay_instance(self):
+        """获取码支付实例"""
         if not self.pid or not self.key:
-            raise Exception("YmPay配置不完整，请先设置pid和key")
+            raise Exception("码支付配置不完整，请先设置pid和key")
         
-        return YmPay(
+        return MaPay(
             pid=self.pid,
             key=self.key,
             gateway_url=self.gateway_url
