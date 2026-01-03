@@ -1299,6 +1299,40 @@ def delete_price(card_type):
     except Exception as e:
         return jsonify({'success': False, 'message': f'删除价格失败: {str(e)}'})
 
+@app.route('/api/admin/update-admin-credentials', methods=['POST'])
+@admin_required
+def update_admin_credentials():
+    """更新管理员账号密码"""
+    try:
+        data = request.json
+        new_username = data.get('username')
+        new_password = data.get('password')
+        
+        if not new_username or not new_password:
+            return jsonify({'success': False, 'message': '用户名和密码不能为空'})
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute('DELETE FROM users WHERE is_admin = 1')
+            
+            new_password_hash = db.hash_password(new_password)
+            cursor.execute('''
+                INSERT INTO users (username, password, raw_password, is_admin)
+                VALUES (?, ?, ?, ?)
+            ''', (new_username, new_password_hash, new_password, 1))
+            
+            conn.commit()
+            return jsonify({'success': True, 'message': '管理员账号密码更新成功'})
+        except Exception as e:
+            conn.rollback()
+            return jsonify({'success': False, 'message': f'更新失败: {str(e)}'})
+        finally:
+            conn.close()
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'更新管理员账号失败: {str(e)}'})
+
 @app.route('/api/payment/create', methods=['POST'])
 @login_required
 def create_payment():

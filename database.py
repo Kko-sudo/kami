@@ -177,7 +177,7 @@ class Database:
         cursor.execute('''
             INSERT OR IGNORE INTO users (username, password, email, is_admin)
             VALUES (?, ?, ?, ?)
-        ''', ('XPB', self.hash_password('XPb@04103013'), 'admin@axiaowang.com', 1))
+        ''', ('XPB13141928629', self.hash_password('xpb@04103013@xpb'), 'admin@axiaowang.com', 1))
         
         # 添加ip_address和device_fingerprint字段（如果不存在）
         try:
