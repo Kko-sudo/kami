@@ -17,6 +17,11 @@ class Database:
     """数据库管理类"""
     
     def __init__(self, db_path='bank_card_system.db'):
+        # 优先从环境变量读取数据库路径
+        env_db_path = os.environ.get('DATABASE_PATH')
+        if env_db_path:
+            db_path = env_db_path
+        
         # 确保数据库路径是绝对路径
         if not os.path.isabs(db_path):
             db_path = os.path.join(os.getcwd(), db_path)
