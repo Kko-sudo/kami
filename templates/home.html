@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阿肖网络</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #floating-messages-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10000;
+            overflow: hidden;
+        }
+
+        .floating-message {
+            position: fixed;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 500;
+            color: white;
+            pointer-events: none;
+            z-index: 10001;
+            opacity: 0;
+            animation: floatLeft 20s linear forwards;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+            white-space: nowrap;
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes floatLeft {
+            0% {
+                opacity: 0;
+                transform: translateX(100vw) translateY(0);
+            }
+            10% {
+                opacity: 1;
+            }
+            85% {
+                opacity: 1;
+            }
+            95% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-100vw) translateY(0);
+            }
+        }
+
+        .floating-message:nth-child(odd) {
+            animation-delay: 0s;
+        }
+
+        .floating-message:nth-child(even) {
+            animation-delay: 3s;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .meteor {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 6px 2px white;
+            animation: meteor 3s linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes meteor {
+            0% {
+                transform: rotate(215deg) translateX(0);
+                opacity: 1;
+            }
+            70% {
+                opacity: 1;
+            }
+            100% {
+                transform: rotate(215deg) translateX(-1000px);
+                opacity: 0;
+            }
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .logo-container {
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 72px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            letter-spacing: 8px;
+            animation: logoGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes logoGlow {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.5));
+            }
+            50% {
+                filter: drop-shadow(0 0 40px rgba(118, 75, 162, 0.8));
+            }
+        }
+
+        .subtitle {
+            font-size: 22px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 50px;
+        }
+
+        .hero-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 60px 40px;
+            margin-bottom: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-text {
+            font-size: 18px;
+            line-height: 2;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 40px;
+        }
+
+        .hero-text strong {
+            color: #f093fb;
+            font-weight: 600;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 18px 50px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-register {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-register:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .btn-download:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.6);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 35px 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .feature-card:nth-child(1) { animation-delay: 0.1s; }
+        .feature-card:nth-child(2) { animation-delay: 0.2s; }
+        .feature-card:nth-child(3) { animation-delay: 0.3s; }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: white;
+        }
+
+        .feature-desc {
+            font-size: 14px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .site-footer {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            color: white;
+            padding: 50px 20px 30px;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto 40px;
+        }
+
+        .footer-section {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .footer-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: white;
+            letter-spacing: 1px;
+        }
+
+        .footer-section p {
+            font-size: 14px;
+            line-height: 2;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+        }
+
+        .footer-section p:hover {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .footer-bottom p {
+            font-size: 13px;
+            margin-bottom: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .footer-links {
+            margin-bottom: 15px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        .footer-legal {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 15px;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 48px;
+                letter-spacing: 4px;
+            }
+
+            .subtitle {
+                font-size: 18px;
+                letter-spacing: 2px;
+            }
+
+            .hero-card {
+                padding: 40px 25px;
+            }
+
+            .btn {
+                padding: 15px 35px;
+                font-size: 14px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="floating-messages-container"></div>
+    <div class="stars" id="stars"></div>
+    
+    <div class="main-container">
+        <div class="logo-container">
+            <div class="logo">阿肖网络</div>
+            <div class="subtitle">专业的自动化解决方案</div>
+        </div>
+        
+        <div class="hero-card">
+            <div class="hero-text">
+                <strong>阿肖网络</strong>致力于为您提供最专业的自动化服务<br>
+                采用先进技术，保障您的账户安全<br>
+                快速交付，多种支付方式，让您的体验更便捷
+            </div>
+            
+            <div class="button-group">
+                <a href="/login" class="btn btn-login">立即登录</a>
+                <a href="/register" class="btn btn-register">免费注册</a>
+                <a href="/downloads" class="btn btn-download">📥 软件下载</a>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <span class="feature-icon">🔐</span>
+                <div class="feature-title">安全可靠</div>
+                <div class="feature-desc">采用先进的加密技术，全方位保障您的账户和数据安全</div>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">⚡</span>
+                <div class="feature-title">快速交付</div>
+                <div class="feature-desc">支付成功后立即发送卡密到您的邮箱，无需等待</div>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">💳</span>
+                <div class="feature-title">多种支付</div>
+                <div class="feature-desc">支持微信、支付宝等多种支付方式，灵活便捷</div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>关于我们</h3>
+                <p>阿肖网络致力于为您提供专业的自动化解决方案</p>
+                <p>技术领先，服务至上，用心对待每一位客户</p>
+            </div>
+            <div class="footer-section">
+                <h3>联系方式</h3>
+                <p>技术支持微信：X-PRPS</p>
+                <p>客服邮箱：2231036058@qq.com</p>
+            </div>
+            <div class="footer-section">
+                <h3>服务条款</h3>
+                <p>使用本服务即表示您同意我们的服务条款和隐私政策</p>
+                <p>我们承诺保护您的个人信息安全</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 阿肖网络 版权所有 | 专业的自动化解决方案</p>
+            <div class="footer-links">
+                <a href="#">服务条款</a>
+                <a href="#">隐私政策</a>
+                <a href="#">帮助中心</a>
+                <a href="#">联系我们</a>
+            </div>
+            <p class="footer-legal">
+                本网站受法律保护，抄袭必究
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+
+            for (let i = 0; i < 5; i++) {
+                const meteor = document.createElement('div');
+                meteor.className = 'meteor';
+                meteor.style.left = Math.random() * 100 + '%';
+                meteor.style.top = Math.random() * 50 + '%';
+                meteor.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(meteor);
+            }
+        }
+
+        function startFloatingMessages() {
+            const messages = [
+                { text: '阿肖网络欢迎您！', color: 'linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%)' },
+                { text: '马年马到成功！', color: 'linear-gradient(135deg, rgba(240, 147, 251, 0.9) 0%, rgba(245, 87, 108, 0.9) 100%)' },
+                { text: '祝您事业蒸蒸日上！', color: 'linear-gradient(135deg, rgba(79, 172, 254, 0.9) 0%, rgba(0, 242, 254, 0.9) 100%)' },
+                { text: '感谢您的信任与支持！', color: 'linear-gradient(135deg, rgba(67, 233, 123, 0.9) 0%, rgba(56, 249, 215, 0.9) 100%)' },
+                { text: '技术支持微信：X-PRPS', color: 'linear-gradient(135deg, rgba(250, 112, 154, 0.9) 0%, rgba(254, 225, 64, 0.9) 100%)' },
+                { text: '优质服务，用心为您！', color: 'linear-gradient(135deg, rgba(168, 237, 234, 0.9) 0%, rgba(254, 214, 227, 0.9) 100%)' },
+                { text: '祝您财源滚滚！', color: 'linear-gradient(135deg, rgba(255, 154, 158, 0.9) 0%, rgba(254, 207, 239, 0.9) 100%)' },
+                { text: '阿肖网络，值得信赖！', color: 'linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%)' }
+            ];
+
+            const container = document.getElementById('floating-messages-container');
+            let messageIndex = 0;
+
+            function createFloatingMessage() {
+                const message = messages[messageIndex % messages.length];
+                const messageElement = document.createElement('div');
+                messageElement.className = 'floating-message';
+                messageElement.textContent = message.text;
+                messageElement.style.background = message.color;
+                messageElement.style.top = Math.random() * 80 + 10 + '%';
+                
+                container.appendChild(messageElement);
+                
+                messageIndex++;
+                
+                setTimeout(() => {
+                    messageElement.remove();
+                }, 20000);
+            }
+
+            for (let i = 0; i < 3; i++) {
+                setTimeout(createFloatingMessage, i * 2000);
+            }
+            
+            setInterval(createFloatingMessage, 4000);
+        }
+
+        createStars();
+        startFloatingMessages();
+    </script>
+</body>
+</html>

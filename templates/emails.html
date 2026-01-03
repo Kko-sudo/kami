@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的邮箱 - 阿肖网络</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .meteor {
+            position: absolute;
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.8));
+            animation: meteor 3s linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes meteor {
+            0% {
+                transform: translateX(-100px) translateY(-100px) rotate(45deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(100vw) translateY(100vh) rotate(45deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 1200px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            animation: fadeInUp 1s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .header .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            color: white;
+        }
+
+        .emails-section h2 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .email-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid rgba(102, 126, 234, 0.8);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .email-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .email-item h3 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 18px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .email-item p {
+            color: rgba(255, 255, 255, 0.8);
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .email-item .email-address {
+            color: rgba(102, 126, 234, 1);
+            font-weight: 600;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .email-item .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .status.active {
+            background: rgba(212, 237, 218, 0.3);
+            color: #d4edda;
+            border: 1px solid rgba(212, 237, 218, 0.5);
+        }
+
+        .status.inactive {
+            background: rgba(248, 215, 218, 0.3);
+            color: #f8d7da;
+            border: 1px solid rgba(248, 215, 218, 0.5);
+        }
+
+        .loading {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 40px;
+        }
+
+        .no-emails {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            padding: 60px 20px;
+        }
+
+        .no-emails p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 1), rgba(118, 75, 162, 1));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .add-email-form {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .add-email-form h3 {
+            color: white;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(102, 126, 234, 0.8);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    <div class="container">
+        <div class="header">
+            <h1>我的邮箱</h1>
+            <button class="back-btn" onclick="window.history.back()">返回上一级</button>
+        </div>
+
+        <div class="main-content">
+            <div class="emails-section">
+                <h2>邮箱列表</h2>
+                
+                <div class="add-email-form">
+                    <h3>添加新邮箱</h3>
+                    <div class="form-group">
+                        <label>邮箱地址</label>
+                        <input type="email" id="new-email" placeholder="请输入邮箱地址">
+                    </div>
+                    <button class="btn" onclick="addEmail()">添加邮箱</button>
+                </div>
+
+                <div id="emails-container">
+                    <div class="loading">加载中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 100;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                star.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                starsContainer.appendChild(star);
+            }
+            
+            const meteorCount = 5;
+            for (let i = 0; i < meteorCount; i++) {
+                const meteor = document.createElement('div');
+                meteor.className = 'meteor';
+                meteor.style.left = Math.random() * 100 + '%';
+                meteor.style.top = Math.random() * 50 + '%';
+                meteor.style.animationDelay = Math.random() * 5 + 's';
+                meteor.style.animationDuration = (Math.random() * 2 + 3) + 's';
+                starsContainer.appendChild(meteor);
+            }
+        }
+
+        function loadEmails() {
+            const emailsContainer = document.getElementById('emails-container');
+            
+            fetch('/api/emails')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.emails && data.emails.length > 0) {
+                        emailsContainer.innerHTML = data.emails.map(email => `
+                            <div class="email-item">
+                                <h3>邮箱地址</h3>
+                                <p class="email-address">${email.email}</p>
+                                <p>添加时间: ${new Date(email.created_at).toLocaleString('zh-CN')}</p>
+                                <span class="status ${email.status}">${email.status === 'active' ? '已激活' : '未激活'}</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        emailsContainer.innerHTML = `
+                            <div class="no-emails">
+                                <p>暂无邮箱</p>
+                                <p style="font-size: 14px; margin-top: 10px;">请添加邮箱以接收卡密</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('加载邮箱失败:', error);
+                    emailsContainer.innerHTML = '<div class="loading">加载失败，请刷新页面重试</div>';
+                });
+        }
+
+        function addEmail() {
+            const emailInput = document.getElementById('new-email');
+            const email = emailInput.value.trim();
+            
+            if (!email) {
+                alert('请输入邮箱地址');
+                return;
+            }
+            
+            if (!email.includes('@')) {
+                alert('请输入有效的邮箱地址');
+                return;
+            }
+
+            fetch('/api/emails', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('邮箱添加成功！');
+                    emailInput.value = '';
+                    loadEmails();
+                } else {
+                    alert(data.message || '添加失败，请重试');
+                }
+            })
+            .catch(error => {
+                console.error('添加邮箱失败:', error);
+                alert('添加失败，请重试');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createStars();
+            loadEmails();
+        });
+    </script>
+</body>
+</html>

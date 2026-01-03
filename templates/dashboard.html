@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>阿肖网络 - 会员中心</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow-x: hidden;
+            position: relative;
+            padding: 40px 20px;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .meteor {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 6px 2px white;
+            animation: meteor 3s linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes meteor {
+            0% {
+                transform: rotate(215deg) translateX(0);
+                opacity: 1;
+            }
+            70% {
+                opacity: 1;
+            }
+            100% {
+                transform: rotate(215deg) translateX(-1000px);
+                opacity: 0;
+            }
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+            max-width: 1400px;
+            width: 100%;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            margin-bottom: 50px;
+        }
+
+        .logo {
+            font-size: 72px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            letter-spacing: 8px;
+            animation: logoGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes logoGlow {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.5));
+            }
+            50% {
+                filter: drop-shadow(0 0 40px rgba(118, 75, 162, 0.8));
+            }
+        }
+
+        .subtitle {
+            font-size: 22px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 30px;
+        }
+
+        .user-info-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1.2s ease-out;
+        }
+
+        .user-info-bar h2 {
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 8px 20px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-logout {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-logout:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.6);
+        }
+
+        .section-title {
+            color: white;
+            font-size: 28px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            text-align: left;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1.3s ease-out;
+        }
+
+        .banks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .bank-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 35px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .bank-card:nth-child(1) { animation-delay: 0.1s; }
+        .bank-card:nth-child(2) { animation-delay: 0.2s; }
+        .bank-card:nth-child(3) { animation-delay: 0.3s; }
+        .bank-card:nth-child(4) { animation-delay: 0.4s; }
+        .bank-card:nth-child(5) { animation-delay: 0.5s; }
+        .bank-card:nth-child(6) { animation-delay: 0.6s; }
+
+        .bank-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .bank-card h3 {
+            color: white;
+            margin-bottom: 25px;
+            font-size: 24px;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            font-size: 15px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .form-group select option {
+            background: #24243e;
+            color: white;
+        }
+
+        .price-display {
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #f093fb;
+            margin: 20px 0;
+            text-shadow: 0 0 20px rgba(240, 147, 251, 0.5);
+        }
+
+        .btn-purchase {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-purchase::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-purchase:hover::before {
+            left: 100%;
+        }
+
+        .btn-purchase:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .total-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin-top: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+            animation: fadeInUp 1.5s ease-out;
+        }
+
+        .total-section h3 {
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .total-price {
+            font-size: 48px;
+            font-weight: bold;
+            color: #f093fb;
+            text-shadow: 0 0 20px rgba(240, 147, 251, 0.5);
+            margin: 0;
+        }
+
+        .btn-purchase-all {
+            padding: 18px 50px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .btn-purchase-all::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-purchase-all:hover::before {
+            left: 100%;
+        }
+
+        .btn-purchase-all:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .message {
+            padding: 18px 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            font-size: 15px;
+            font-weight: 500;
+            border: 1px solid;
+            backdrop-filter: blur(10px);
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .message.success {
+            background: rgba(212, 237, 218, 0.15);
+            color: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .message.error {
+            background: rgba(248, 215, 218, 0.15);
+            color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .orders-section {
+            margin-top: 50px;
+            animation: fadeInUp 1.4s ease-out;
+        }
+
+        .order-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .order-item:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .order-item h3 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .order-item p {
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .order-item .status {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .order-item .status.pending {
+            background: rgba(255, 243, 205, 0.2);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .order-item .status.completed {
+            background: rgba(212, 237, 218, 0.2);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: white;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .card-key-display {
+            background: rgba(72, 219, 251, 0.15);
+            padding: 15px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            word-break: break-all;
+            margin-top: 15px;
+            color: #48dbfb;
+            border: 1px solid rgba(72, 219, 251, 0.3);
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .emails-section {
+            margin-top: 50px;
+            animation: fadeInUp 1.5s ease-out;
+        }
+
+        .email-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .email-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(10px);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .email-item.unread {
+            border-left-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .email-item h3 {
+            color: white;
+            margin-bottom: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .email-item p {
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .email-item .email-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .email-item .email-sender {
+            color: #48dbfb;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .email-item .email-time {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+        }
+
+        .email-content {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 15px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            display: none;
+        }
+
+        .email-content.show {
+            display: block;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .email-card-key {
+            background: rgba(72, 219, 251, 0.2);
+            padding: 15px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            color: #48dbfb;
+            border: 1px solid rgba(72, 219, 251, 0.5);
+            margin-top: 15px;
+            text-align: center;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(72, 219, 251, 0.5);
+        }
+
+        .payment-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .payment-modal.active {
+            display: flex;
+        }
+
+        .payment-content {
+            background: rgba(15, 12, 41, 0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .payment-close {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 32px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.7);
+            background: none;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .payment-close:hover {
+            color: #e74c3c;
+            transform: rotate(90deg);
+        }
+
+        .payment-title {
+            text-align: center;
+            color: white;
+            margin-bottom: 15px;
+            font-size: 22px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .payment-amount {
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
+        }
+
+        .payment-qrcode-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .payment-qrcode-img {
+            max-width: 200px;
+            height: auto;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .payment-timer {
+            text-align: center;
+            font-size: 18px;
+            color: #e74c3c;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .payment-divider {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            margin: 20px 0;
+            font-size: 16px;
+            position: relative;
+        }
+
+        .payment-divider::before,
+        .payment-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .payment-divider::before {
+            left: 0;
+        }
+
+        .payment-divider::after {
+            right: 0;
+        }
+
+        .payment-link-section {
+            margin-bottom: 20px;
+        }
+
+        .payment-link-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .payment-link-input {
+            flex: 1;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .payment-link-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-copy-link {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .btn-copy-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(240, 147, 251, 0.6);
+        }
+
+        .payment-link-hint {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .payment-important-notice {
+            background: rgba(231, 76, 60, 0.15);
+            border-left: 4px solid #e74c3c;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .red-text {
+            color: #e74c3c;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+        }
+
+        .btn-confirm-payment {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            margin-bottom: 15px;
+        }
+
+        .btn-confirm-payment:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .payment-method {
+            flex: 1;
+            text-align: center;
+            padding: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .payment-method:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .payment-method.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.25);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .payment-method img {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            margin-bottom: 12px;
+        }
+
+        .payment-method p {
+            color: white;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .payment-timer {
+            text-align: center;
+            font-size: 18px;
+            color: #e74c3c;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .payment-status {
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .payment-status.success {
+            background: rgba(212, 237, 218, 0.2);
+            color: #d4edda;
+            border: 1px solid rgba(212, 237, 218, 0.3);
+        }
+
+        .payment-status.error {
+            background: rgba(248, 215, 218, 0.2);
+            color: #f8d7da;
+            border: 1px solid rgba(248, 215, 218, 0.3);
+        }
+
+        .payment-tips {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 0;
+        }
+
+        .payment-tips h4 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .payment-tips ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .payment-tips li {
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 6px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .payment-tips li:last-child {
+            margin-bottom: 0;
+        }
+
+        .card-key-display {
+            text-align: center;
+            padding: 25px;
+            background: rgba(212, 237, 218, 0.2);
+            border-radius: 15px;
+            margin-top: 25px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .card-key-display h3 {
+            color: #155724;
+            margin-bottom: 18px;
+            font-size: 20px;
+        }
+
+        .key-value {
+            font-size: 26px;
+            font-weight: bold;
+            color: #28a745;
+            background: white;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 48px;
+            }
+
+            .subtitle {
+                font-size: 18px;
+                letter-spacing: 2px;
+            }
+
+            .user-info-bar {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .banks-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                font-size: 22px;
+            }
+
+            .bank-card {
+                padding: 25px 20px;
+            }
+
+            .payment-methods {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+
+    <div class="main-container">
+        <div class="header">
+            <div class="logo">阿肖网络</div>
+            <div class="subtitle">会员中心</div>
+        </div>
+
+        <div class="user-info-bar">
+            <h2>欢迎，<span id="username-display"></span></h2>
+            <div class="nav-links">
+                <a href="/orders" class="nav-link">我的订单</a>
+            </div>
+            <button class="btn btn-logout" onclick="logout()">退出登录</button>
+        </div>
+
+        <div id="message-container"></div>
+
+        <h2 class="section-title">选择银行和天数</h2>
+        <div id="banks-container" class="banks-grid">
+            <div class="bank-card" data-bank="中国银行">
+                <h3>中国银行</h3>
+                <div class="form-group">
+                    <label>选择天数</label>
+                    <select class="day-select" onchange="updatePrice(this)">
+                        <option value="">请选择天数</option>
+                        <option value="1day">1天体验卡</option>
+                        <option value="30days">30天月卡</option>
+                    </select>
+                </div>
+                <div class="price-display" id="price-中国银行">¥0.00</div>
+            </div>
+
+            <div class="bank-card" data-bank="农业银行">
+                <h3>农业银行</h3>
+                <div class="form-group">
+                    <label>选择天数</label>
+                    <select class="day-select" onchange="updatePrice(this)">
+                        <option value="">请选择天数</option>
+                        <option value="1day">1天体验卡</option>
+                        <option value="30days">30天月卡</option>
+                    </select>
+                </div>
+                <div class="price-display" id="price-农业银行">¥0.00</div>
+            </div>
+
+            <div class="bank-card" data-bank="建设银行">
+                <h3>建设银行</h3>
+                <div class="form-group">
+                    <label>选择天数</label>
+                    <select class="day-select" onchange="updatePrice(this)">
+                        <option value="">请选择天数</option>
+                        <option value="1day">1天体验卡</option>
+                        <option value="30days">30天月卡</option>
+                    </select>
+                </div>
+                <div class="price-display" id="price-建设银行">¥0.00</div>
+            </div>
+
+            <div class="bank-card" data-bank="工商银行">
+                <h3>工商银行</h3>
+                <div class="form-group">
+                    <label>选择天数</label>
+                    <select class="day-select" onchange="updatePrice(this)">
+                        <option value="">请选择天数</option>
+                        <option value="1day">1天体验卡</option>
+                        <option value="30days">30天月卡</option>
+                    </select>
+                </div>
+                <div class="price-display" id="price-工商银行">¥0.00</div>
+            </div>
+
+            <div class="bank-card" data-bank="邮政银行">
+                <h3>邮政银行</h3>
+                <div class="form-group">
+                    <label>选择天数</label>
+                    <select class="day-select" onchange="updatePrice(this)">
+                        <option value="">请选择天数</option>
+                        <option value="1day">1天体验卡</option>
+                        <option value="30days">30天月卡</option>
+                    </select>
+                </div>
+                <div class="price-display" id="price-邮政银行">¥0.00</div>
+            </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="total-section">
+            <h3>总计</h3>
+            <div class="total-price" id="total-price">¥0.00</div>
+            <button class="btn btn-purchase-all" onclick="purchaseAll()">提交订单</button>
+        </div>
+    </div>
+
+    <div class="payment-modal" id="payment-modal">
+        <div class="payment-content">
+            <button class="payment-close" onclick="closePaymentModal()">&times;</button>
+            <h2 class="payment-title">订单支付</h2>
+            <div class="payment-amount" id="payment-amount">¥0.00</div>
+            <div class="payment-qrcode-container">
+                <img src="/static/images/payment_qrcode.png" alt="二合一收款码" class="payment-qrcode-img">
+            </div>
+            <div class="payment-timer" id="payment-timer">请在 05:00 内完成支付</div>
+            
+            <div class="payment-important-notice">
+                <strong>⚠️ 特别注意：</strong>付款时<span class="red-text">必须备注</span>您的阿肖网络注册账号！
+            </div>
+
+            <button class="btn btn-confirm-payment" onclick="confirmPayment()">我已支付</button>
+            <div class="payment-tips">
+                <h4>支付说明</h4>
+                <ul>
+                    <li>请使用微信或支付宝扫描上方二维码</li>
+                    <li><span class="red-text">付款时务必备注您的注册账号</span></li>
+                    <li>支付完成后，点击"我已支付"按钮</li>
+                    <li>如有问题，请联系客服微信：X-PRPS</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+
+            for (let i = 0; i < 5; i++) {
+                const meteor = document.createElement('div');
+                meteor.className = 'meteor';
+                meteor.style.left = Math.random() * 100 + '%';
+                meteor.style.top = Math.random() * 50 + '%';
+                meteor.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(meteor);
+            }
+        }
+
+        window.onload = async function() {
+            createStars();
+            loadUserInfo();
+            await loadPrices();
+        };
+
+        let prices = {};
+
+        async function loadPrices() {
+            try {
+                const response = await fetch('/api/prices');
+                const data = await response.json();
+                
+                if (data.success && data.data.length > 0) {
+                    data.data.forEach(price => {
+                        prices[price.card_type] = price.price;
+                    });
+                }
+            } catch (error) {
+                console.error('加载价格失败:', error);
+            }
+        }
+
+        function updatePrice(selectElement) {
+            const bankCard = selectElement.closest('.bank-card');
+            const bankName = bankCard.getAttribute('data-bank');
+            const selectedValue = selectElement.value;
+            const priceDisplay = document.getElementById(`price-${bankName}`);
+
+            if (selectedValue && prices[selectedValue]) {
+                priceDisplay.textContent = `¥${prices[selectedValue].toFixed(2)}`;
+            } else {
+                priceDisplay.textContent = '¥0.00';
+            }
+            updateTotalPrice();
+        }
+
+        function updateTotalPrice() {
+            let total = 0;
+            const banks = ['中国银行', '农业银行', '建设银行', '工商银行', '邮政银行'];
+            
+            banks.forEach(bankName => {
+                const bankCard = document.querySelector(`.bank-card[data-bank="${bankName}"]`);
+                const selectElement = bankCard.querySelector('.day-select');
+                const selectedValue = selectElement.value;
+                
+                if (selectedValue && prices[selectedValue]) {
+                    total += prices[selectedValue];
+                }
+            });
+            
+            document.getElementById('total-price').textContent = `¥${total.toFixed(2)}`;
+        }
+
+        function showMessage(message, type) {
+            const container = document.getElementById('message-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            container.appendChild(messageDiv);
+
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        async function purchaseBank(bankName) {
+            const bankCard = document.querySelector(`.bank-card[data-bank="${bankName}"]`);
+            const selectElement = bankCard.querySelector('.day-select');
+            const selectedValue = selectElement.value;
+
+            if (!selectedValue) {
+                showMessage('请先选择天数', 'error');
+                return;
+            }
+
+            const price = prices[selectedValue];
+            
+            try {
+                const response = await fetch('/api/orders/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        banks: [bankName],
+                        card_type: selectedValue
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.card_key) {
+                        showMessage(`体验卡生成成功！卡密：${data.card_key}`, 'success');
+                    } else {
+                        openPaymentModal(price, bankName, selectedValue, data.order_id);
+                    }
+                } else {
+                    showMessage(data.message || '订单创建失败', 'error');
+                }
+            } catch (error) {
+                console.error('订单创建失败:', error);
+                showMessage('订单创建失败，请稍后重试', 'error');
+            }
+        }
+
+        async function purchaseAll() {
+            const banks = [];
+            const bankList = ['中国银行', '农业银行', '建设银行', '工商银行', '邮政银行'];
+            let totalPrice = 0;
+            let selectedCardType = null;
+
+            bankList.forEach(bankName => {
+                const bankCard = document.querySelector(`.bank-card[data-bank="${bankName}"]`);
+                const selectElement = bankCard.querySelector('.day-select');
+                const selectedValue = selectElement.value;
+
+                if (selectedValue && prices[selectedValue]) {
+                    banks.push(bankName);
+                    totalPrice += prices[selectedValue];
+                    
+                    if (!selectedCardType) {
+                        selectedCardType = selectedValue;
+                    }
+                }
+            });
+
+            if (banks.length === 0) {
+                showMessage('请至少选择一个银行和天数', 'error');
+                return;
+            }
+
+            if (totalPrice === 0) {
+                showMessage('请选择有效的天数', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/orders/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        banks: banks,
+                        card_type: selectedCardType
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.card_key) {
+                        showMessage(`体验卡生成成功！卡密：${data.card_key}`, 'success');
+                    } else {
+                        openPaymentModal(totalPrice, '多银行订单', selectedCardType, data.order_id);
+                    }
+                } else {
+                    showMessage(data.message || '订单创建失败', 'error');
+                }
+            } catch (error) {
+                console.error('订单创建失败:', error);
+                showMessage('订单创建失败，请稍后重试', 'error');
+            }
+        }
+
+        let currentOrderId = null;
+
+        function openPaymentModal(price, bankName, duration, orderId) {
+            const modal = document.getElementById('payment-modal');
+            const amountDisplay = document.getElementById('payment-amount');
+            amountDisplay.textContent = `¥${price.toFixed(2)}`;
+            currentOrderId = orderId;
+            modal.classList.add('active');
+            startPaymentTimer();
+        }
+
+        function closePaymentModal() {
+            const modal = document.getElementById('payment-modal');
+            modal.classList.remove('active');
+        }
+
+        function selectPaymentMethod(method) {
+            const methods = document.querySelectorAll('.payment-method');
+            methods.forEach(m => m.classList.remove('active'));
+            
+            const qrCodes = document.querySelectorAll('.payment-qrcode');
+            qrCodes.forEach(q => q.classList.remove('active'));
+
+            if (method === 'wechat') {
+                methods[0].classList.add('active');
+                document.getElementById('wechat-qrcode').classList.add('active');
+            } else {
+                methods[1].classList.add('active');
+                document.getElementById('alipay-qrcode').classList.add('active');
+            }
+        }
+
+        let paymentTimer;
+        let timeLeft = 300;
+
+        function startPaymentTimer() {
+            clearInterval(paymentTimer);
+            timeLeft = 300;
+            updateTimerDisplay();
+
+            paymentTimer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+
+                if (timeLeft <= 0) {
+                    clearInterval(paymentTimer);
+                    closePaymentModal();
+                    showMessage('支付超时，请重新下单', 'error');
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('payment-timer').textContent = 
+                `请在 ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} 内完成支付`;
+        }
+
+        function copyPaymentLink() {
+            const linkInput = document.getElementById('payment-link');
+            linkInput.select();
+            linkInput.setSelectionRange(0, 99999);
+            
+            try {
+                navigator.clipboard.writeText(linkInput.value).then(() => {
+                    showMessage('链接已复制到剪贴板', 'success');
+                }).catch(() => {
+                    document.execCommand('copy');
+                    showMessage('链接已复制到剪贴板', 'success');
+                });
+            } catch (err) {
+                showMessage('复制失败，请手动复制链接', 'error');
+            }
+        }
+
+        async function confirmPayment() {
+            if (!currentOrderId) {
+                showMessage('订单信息错误', 'error');
+                return;
+            }
+
+            const confirmed = confirm('请确认您已完成支付！\n\n注意：\n1. 如果您未完成支付就点击确认，订单将被标记为异常\n2. 恶意点击可能导致账号被封禁\n3. 请确保已通过微信或支付宝完成支付后再点击确认\n\n您确定已完成支付吗？');
+            
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+                // 判断是订单组还是单个订单
+                const isOrderGroup = currentOrderId > 1000000; // 假设订单组ID大于1000000
+                const apiUrl = isOrderGroup 
+                    ? `/api/order-groups/${currentOrderId}/user-confirm`
+                    : `/api/orders/${currentOrderId}/user-confirm`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('支付确认已提交，请等待管理员审核', 'success');
+                    closePaymentModal();
+                } else {
+                    showMessage(data.message || '支付确认失败', 'error');
+                }
+            } catch (error) {
+                console.error('支付确认失败:', error);
+                showMessage('支付确认失败，请稍后重试', 'error');
+            }
+        }
+
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/user');
+                const data = await response.json();
+                if (data.username) {
+                    document.getElementById('username-display').textContent = data.username;
+                }
+            } catch (error) {
+                console.error('加载用户信息失败:', error);
+            }
+        }
+
+        function logout() {
+            fetch('/api/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    login_type: 'user'
+                })
+            }).then(() => {
+                window.location.href = '/login';
+            });
+        }
+
+    </script>
+</body>
+</html>

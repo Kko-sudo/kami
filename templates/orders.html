@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的订单 - 自动化系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .meteor {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 6px 2px white;
+            animation: meteor 3s linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes meteor {
+            0% {
+                transform: rotate(215deg) translateX(0);
+                opacity: 1;
+            }
+            70% {
+                opacity: 1;
+            }
+            100% {
+                transform: rotate(215deg) translateX(-1000px);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 1200px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .header .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .orders-section h2 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .order-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid rgba(102, 126, 234, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .order-item h3 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .order-item p {
+            color: rgba(255, 255, 255, 0.75);
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .order-item .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .status.pending {
+            background: rgba(255, 243, 205, 0.2);
+            color: #ffc107;
+        }
+
+        .status.paid {
+            background: rgba(204, 229, 255, 0.2);
+            color: #4dabf7;
+        }
+
+        .status.completed {
+            background: rgba(212, 237, 218, 0.2);
+            color: #28a745;
+        }
+
+        .status.failed {
+            background: rgba(248, 215, 218, 0.2);
+            color: #dc3545;
+        }
+
+        .order-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .order-actions .btn {
+            padding: 8px 20px;
+            font-size: 13px;
+            flex: 1;
+        }
+
+        .btn-danger {
+            background: rgba(220, 53, 69, 0.8);
+        }
+
+        .btn-danger:hover {
+            background: rgba(220, 53, 69, 1);
+        }
+
+        .card-key-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(40, 167, 69, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 8px;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+
+        .card-key-text {
+            color: #28a745;
+            font-weight: 600;
+            font-size: 13px;
+            flex: 1;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            background: rgba(40, 167, 69, 0.8);
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            background: rgba(40, 167, 69, 1);
+            transform: translateY(-1px);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 40px;
+        }
+
+        .no-orders {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            padding: 60px 20px;
+        }
+
+        .no-orders p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>我的订单</h1>
+            <button class="back-btn" onclick="window.history.back()">返回上一级</button>
+        </div>
+
+        <div class="main-content">
+            <div class="orders-section">
+                <h2>订单列表</h2>
+                <div id="orders-container">
+                    <div class="loading">加载中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+
+            for (let i = 0; i < 5; i++) {
+                const meteor = document.createElement('div');
+                meteor.className = 'meteor';
+                meteor.style.left = Math.random() * 100 + '%';
+                meteor.style.top = Math.random() * 50 + '%';
+                meteor.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(meteor);
+            }
+        }
+
+        function loadOrders() {
+            const ordersContainer = document.getElementById('orders-container');
+            
+            fetch('/api/orders')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.orders && data.orders.length > 0) {
+                        ordersContainer.innerHTML = data.orders.map(order => {
+                            let actionsHtml = '';
+                            if (order.status === 'pending') {
+                                actionsHtml = `
+                                    <div class="order-actions">
+                                        <button class="btn" onclick="continuePayment(${order.order_id}, ${order.total_price})">继续支付</button>
+                                        <button class="btn btn-danger" onclick="cancelOrder(${order.order_id})">取消订单</button>
+                                    </div>
+                                `;
+                            }
+                            
+                            let cardKeysHtml = '';
+                            if (order.card_keys && order.card_keys.length > 0) {
+                                cardKeysHtml = order.card_keys.map(ck => 
+                                    `<div class="card-key-container">
+                                        <span class="card-key-text">${ck.bank_name}: ${ck.card_key}</span>
+                                        <button class="copy-btn" onclick="copyCardKey('${ck.card_key}')">复制卡密</button>
+                                    </div>`
+                                ).join('');
+                            }
+                            
+                            return `
+                            <div class="order-item">
+                                <h3>订单号: ${order.order_id}</h3>
+                                <p>银行: ${order.bank_name}</p>
+                                <p>卡密类型: ${order.card_type}</p>
+                                <p>数量: ${order.quantity}</p>
+                                <p>总金额: ¥${(order.total_price || 0).toFixed(2)}</p>
+                                <p>创建时间: ${new Date(order.created_at).toLocaleString('zh-CN')}</p>
+                                <span class="status ${order.status}">${getStatusText(order.status)}</span>
+                                ${cardKeysHtml}
+                                ${actionsHtml}
+                            </div>
+                        `}).join('');
+                    } else {
+                        ordersContainer.innerHTML = `
+                            <div class="no-orders">
+                                <p>暂无订单</p>
+                                <button class="btn" onclick="window.location.href='/dashboard'">去下单</button>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('加载订单失败:', error);
+                    ordersContainer.innerHTML = '<div class="loading">加载失败，请刷新页面重试</div>';
+                });
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '待支付',
+                'paid': '已支付',
+                'completed': '已完成',
+                'failed': '已失败'
+            };
+            return statusMap[status] || status;
+        }
+
+        function continuePayment(orderId, amount) {
+            window.location.href = `/dashboard?continue_payment=${orderId}&amount=${amount}`;
+        }
+
+        function cancelOrder(orderId) {
+            if (!confirm('确定要删除这个订单吗？')) {
+                return;
+            }
+            
+            // 判断是订单组还是单个订单（假设订单组ID大于1000000）
+            const isOrderGroup = orderId > 1000000;
+            const apiUrl = isOrderGroup 
+                ? `/api/order-groups/${orderId}/cancel`
+                : `/api/orders/${orderId}/cancel`;
+            
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('订单已删除');
+                    loadOrders();
+                } else {
+                    alert(data.message || '删除订单失败');
+                }
+            })
+            .catch(error => {
+                console.error('删除订单失败:', error);
+                alert('删除订单失败，请稍后重试');
+            });
+        }
+
+        function copyCardKey(cardKey) {
+            navigator.clipboard.writeText(cardKey).then(() => {
+                alert('卡密已复制到剪贴板');
+            }).catch(err => {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动复制');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createStars();
+            loadOrders();
+        });
+    </script>
+</body>
+</html>

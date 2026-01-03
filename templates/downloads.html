@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>软件下载 - 阿肖网络</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+            padding: 20px;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 60px 50px;
+            max-width: 1200px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 10;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            color: white;
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .notice-box {
+            background: rgba(240, 147, 251, 0.1);
+            border-left: 4px solid #f093fb;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        .notice-box h3 {
+            color: #f093fb;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .notice-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .notice-box li {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+            font-size: 15px;
+        }
+
+        .notice-box li:before {
+            content: "•";
+            color: #f093fb;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .downloads-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .download-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 35px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .download-item:nth-child(1) { animation-delay: 0.1s; }
+        .download-item:nth-child(2) { animation-delay: 0.2s; }
+        .download-item:nth-child(3) { animation-delay: 0.3s; }
+        .download-item:nth-child(4) { animation-delay: 0.4s; }
+        .download-item:nth-child(5) { animation-delay: 0.5s; }
+
+        .download-item:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .download-icon {
+            font-size: 56px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .download-item h3 {
+            color: white;
+            font-size: 22px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .download-item p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.8;
+        }
+
+        .download-btn {
+            display: inline-block;
+            width: 100%;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .download-btn:hover::before {
+            left: 100%;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .version-info {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .download-all-section {
+            margin-top: 50px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            text-align: center;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+        }
+
+        .download-all-section h2 {
+            font-size: 28px;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .download-all-section p {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 25px;
+        }
+
+        .download-all-btn {
+            display: inline-block;
+            padding: 18px 50px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+            letter-spacing: 1px;
+        }
+
+        .download-all-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.6);
+        }
+
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>软件下载中心</h1>
+            <p>银行纪念币预约助手 - 专业自动化工具</p>
+        </div>
+
+        <a href="/" class="back-btn">← 返回首页</a>
+
+        <div class="notice-box">
+            <h3>📋 下载说明</h3>
+            <ul>
+                <li>所有软件均为Windows版本，支持Windows 7及以上系统</li>
+                <li>点击下方下载按钮将跳转到夸克网盘，请选择对应的银行文件夹下载</li>
+                <li>下载后请先解压压缩包，然后运行exe文件</li>
+                <li>首次运行需要输入对应银行的卡密才能使用</li>
+                <li>如有问题，请联系客服微信：X-PRPS</li>
+            </ul>
+        </div>
+
+        <div class="downloads-grid">
+            <div class="download-item">
+                <span class="download-icon">🏦</span>
+                <h3>中国银行预约助手</h3>
+                <p>中国银行纪念币预约自动化工具，支持快速预约、自动填写等功能</p>
+                <a href="https://pan.quark.cn/s/b9287de2b0d9?pwd=DdLD" target="_blank" class="download-btn">立即下载</a>
+                <div class="version-info">版本: v1.0.0 | 大小: 约250MB</div>
+            </div>
+
+            <div class="download-item">
+                <span class="download-icon">🌾</span>
+                <h3>农业银行预约助手</h3>
+                <p>农业银行纪念币预约自动化工具，支持快速预约、自动填写等功能</p>
+                <a href="https://pan.quark.cn/s/b9287de2b0d9?pwd=DdLD" target="_blank" class="download-btn">立即下载</a>
+                <div class="version-info">版本: v1.0.0 | 大小: 约250MB</div>
+            </div>
+
+            <div class="download-item">
+                <span class="download-icon">🏗️</span>
+                <h3>建设银行预约助手</h3>
+                <p>建设银行纪念币预约自动化工具，支持快速预约、自动填写等功能</p>
+                <a href="https://pan.quark.cn/s/b9287de2b0d9?pwd=DdLD" target="_blank" class="download-btn">立即下载</a>
+                <div class="version-info">版本: v1.0.0 | 大小: 约250MB</div>
+            </div>
+
+            <div class="download-item">
+                <span class="download-icon">🏢</span>
+                <h3>工商银行预约助手</h3>
+                <p>工商银行纪念币预约自动化工具，支持快速预约、自动填写等功能</p>
+                <a href="https://pan.quark.cn/s/b9287de2b0d9?pwd=DdLD" target="_blank" class="download-btn">立即下载</a>
+                <div class="version-info">版本: v1.0.0 | 大小: 约250MB</div>
+            </div>
+
+            <div class="download-item">
+                <span class="download-icon">📮</span>
+                <h3>邮政银行预约助手</h3>
+                <p>邮政银行纪念币预约自动化工具，支持快速预约、自动填写等功能</p>
+                <a href="https://pan.quark.cn/s/b9287de2b0d9?pwd=DdLD" target="_blank" class="download-btn">立即下载</a>
+                <div class="version-info">版本: v1.0.0 | 大小: 约250MB</div>
+            </div>
+        </div>
+
+        <div class="download-all-section">
+            <h2>📦 一键下载全部</h2>
+            <p>点击下方按钮跳转到夸克网盘，选择您需要的银行文件夹下载</p>
+            <a href="https://pan.quark.cn/s/b9287de2b0d9?pwd=DdLD" target="_blank" class="download-all-btn">前往夸克网盘下载</a>
+        </div>
+
+        <div class="footer">
+            <p>© 2026 阿肖网络 - 专业自动化解决方案</p>
+        </div>
+    </div>
+
+    <script>
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 1 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+        createStars();
+    </script>
+</body>
+</html>
